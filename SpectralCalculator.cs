@@ -37,6 +37,10 @@ namespace SpectralAnalysis
             for (int i = 0; i < wl.Length; i++)
                 spd[i] = Math.Pow(560.0 / wl[i], 5) * (Math.Exp(c2 / (560.0 * T)) - 1) / (Math.Exp(c2 / (wl[i] * T)) - 1);
             int idx = Array.IndexOf(wl, 560.0);
+            if (idx < 0)
+            {
+                throw new InvalidOperationException("Wavelength 560.0nm not found in the provided wavelength array. Cannot normalize Blackbody SPD as intended.");
+            }
             if (idx >= 0)
                 for (int i = 0; i < spd.Length; i++) spd[i] *= 100 / spd[idx];
             return spd;
