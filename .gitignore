@@ -1,0 +1,9 @@
+bin/
+obj/
+*.user
+*.exe
+*.dll
+*.pdb
+*.cache
+*.csproj.nuget.g.props
+*.csproj.nuget.g.targets

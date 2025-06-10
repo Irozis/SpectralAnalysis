@@ -8,8 +8,10 @@ namespace SpectralAnalysis
 {
     public class MainForm : Form
     {
-        private TextBox txtSamplePath, txtTelefonPath, txtResults;
+        private TextBox txtSamplePath, txtTelefonPath;
         private Button btnBrowseSample, btnBrowseTelefon, btnCalculate;
+        private ComboBox cmbStandard;
+        private DataGridView gridResults;
 
         public MainForm()
         {
@@ -26,20 +28,27 @@ namespace SpectralAnalysis
             btnBrowseTelefon = new Button { Text = "Browse...", Left = 680, Top = 56, Width = 100 };
             btnBrowseTelefon.Click += (_, __) => BrowseFile(txtTelefonPath);
 
-            btnCalculate = new Button { Text = "Calculate", Left = 350, Top = 100, Width = 100 };
+            Label lbl3 = new Label { Text = "Illuminant:", Left = 10, Top = 100, Width = 100 };
+            cmbStandard = new ComboBox { Left = 120, Top = 96, Width = 150, DropDownStyle = ComboBoxStyle.DropDownList };
+            cmbStandard.Items.AddRange(new object[] { "BB", "F11", "D50" });
+            cmbStandard.SelectedIndex = 0;
+
+            btnCalculate = new Button { Text = "Calculate", Left = 300, Top = 96, Width = 100 };
             btnCalculate.Click += (_, __) => RunCalculation();
 
-            txtResults = new TextBox
+            gridResults = new DataGridView
             {
                 Left = 10, Top = 140,
                 Width = 770, Height = 430,
-                Multiline = true, ScrollBars = ScrollBars.Both,
-                Font = new System.Drawing.Font("Consolas", 10), ReadOnly = true
+                ReadOnly = true,
+                AllowUserToAddRows = false,
+                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells
             };
 
             Controls.AddRange(new Control[] { lbl1, txtSamplePath, btnBrowseSample,
                                               lbl2, txtTelefonPath, btnBrowseTelefon,
-                                              btnCalculate, txtResults });
+                                              lbl3, cmbStandard,
+                                              btnCalculate, gridResults });
         }
 
         private void BrowseFile(TextBox target)
@@ -66,11 +75,12 @@ namespace SpectralAnalysis
 
                 var R_samp = SpectralCalculator.Interpolate(sample.Wavelengths, sample.Values, wavelengths);
                 var SPD_tel = SpectralCalculator.Interpolate(telefon.Wavelengths, telefon.Values, wavelengths);
-                var SPD_BB = SpectralCalculator.LoadStandardBlackbodySPD(wavelengths);
+                var selected = cmbStandard.SelectedItem?.ToString() ?? "BB";
+                var SPD_std = SpectralCalculator.LoadStandardSPD(selected, wavelengths);
                 var cie = SpectralCalculator.LoadCIE1931Functions(wavelengths);
 
                 var results = new List<AnalysisResult>();
-                foreach (var source in new[] { (Name: "Blackbody", SPD: SPD_BB), (Name: "Telefon", SPD: SPD_tel) })
+                foreach (var source in new[] { (Name: selected, SPD: SPD_std), (Name: "Telefon", SPD: SPD_tel) })
                 {
                     var Xs = Colorimetry.ComputeCIEXYZ(wavelengths, R_samp, source.SPD, cie);
                     var Xref = Colorimetry.ComputeCIEXYZ(wavelengths, Enumerable.Repeat(1.0, wavelengths.Length).ToArray(), source.SPD, cie);
@@ -84,7 +94,7 @@ namespace SpectralAnalysis
                     var deltaE = Colorimetry.ComputeDeltaE(labS, labR);
                     var p = SpectralCalculator.ComputePearsonCorrelation(R_samp, source.SPD);
                     var cct = Colorimetry.ComputeCCT(Xref);
-                    var dens = Densitometry.ComputeDensities(wavelengths, R_samp);
+                    var dens = Densitometry.ComputeDensity(wavelengths, R_samp);
 
                     results.Add(new AnalysisResult
                     {
@@ -100,7 +110,28 @@ namespace SpectralAnalysis
                     });
                 }
 
-                txtResults.Text = JsonSerializer.Serialize(results, new JsonSerializerOptions { WriteIndented = true });
+                var table = results.Select(r => new
+                {
+                    r.Source,
+                    X = r.XYZ[0],
+                    Y = r.XYZ[1],
+                    Z = r.XYZ[2],
+                    r.xy.x,
+                    r.xy.y,
+                    r.Lab.L,
+                    r.Lab.a,
+                    r.Lab.b,
+                    r.DeltaE,
+                    r.Pearson,
+                    r.CCT,
+                    r.Densities.D0,
+                    C = r.Densities.C,
+                    M = r.Densities.M,
+                    YD = r.Densities.Y,
+                    K = r.Densities.K
+                }).ToList();
+
+                gridResults.DataSource = table;
             }
             catch (Exception ex)
             {
