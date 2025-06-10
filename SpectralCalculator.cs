@@ -17,7 +17,46 @@ namespace SpectralAnalysis
                 {
                     idx = ~idx;
                     if (idx == 0 || idx >= x.Length) result[i] = 0;
-                    else result[i] = y[idx - 1] + (y[idx] - y[idx - 1]) * (val - x[idx - 1]) / (x[idx] - x[idx - 1]);
+                    else // Interpolation case: x[idx-1] < val < x[idx]
+                    {
+                        // Defensive checks:
+                        // Based on the logic, idx should be within [1, x.Length - 1] here.
+                        // So, idx-1 should be within [0, x.Length - 2].
+                        // And y.Length is equal to x.Length.
+                        if (!(idx - 1 >= 0 && idx - 1 < y.Length && idx >= 0 && idx < y.Length))
+                        {
+                            throw new ApplicationException(
+                                $"Critical error in Interpolate: Index sanity check failed before interpolation. " +
+                                $"idx={idx}, x.Length={x.Length}, y.Length={y.Length}. " +
+                                $"This state should be unreachable if logic is correct."
+                            );
+                        }
+
+                        // Check for division by zero explicitly, though this would be a different error type.
+                        if (x[idx] == x[idx - 1])
+                        {
+                           // If wavelengths are identical, avoid division by zero.
+                           // One option is to take the value from the lower index, or average, or throw.
+                           // For now, let's be consistent with how BinarySearch might treat duplicates
+                           // and use y[idx-1] (or y[idx] if preferred, they might differ if values at duplicate wavelengths differ).
+                           // This case should ideally be rare if wavelengths are distinct measurements.
+                           // If x has been sorted, and it contains duplicate wavelengths,
+                           // x[idx-1] and x[idx] could be those identical wavelengths if val falls between them (which is impossible)
+                           // or if val is equal to one of them and BinarySearch behaved in a certain way.
+                           // More likely, if x[idx] == x[idx-1], it implies these are the two points surrounding 'val'.
+                           // This situation (val between two identical x values) shouldn't occur if x is properly sorted
+                           // and 'val' is not equal to these x values.
+                           // If 'val' IS equal to these x values, BinarySearch should have returned idx >=0.
+                           // So this implies an issue or specific handling for duplicate x entries.
+                           // For now, a simple assignment to avoid crash, though this part of logic might need review based on data characteristics.
+                           // Defaulting to y[idx-1] if denominator is zero.
+                            result[i] = y[idx - 1];
+                        }
+                        else
+                        {
+                            result[i] = y[idx - 1] + (y[idx] - y[idx - 1]) * (val - x[idx - 1]) / (x[idx] - x[idx - 1]);
+                        }
+                    }
                 }
             }
             return result;
