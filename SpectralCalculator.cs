@@ -30,16 +30,59 @@ namespace SpectralAnalysis
             return sum;
         }
 
-        public static double[] LoadStandardBlackbodySPD(double[] wl)
+        public static double[] LoadBlackbodySPD(double[] wl, double temperature)
         {
-            const double T = 2856, c2 = 1.4388e7;
+            const double c2 = 1.4388e7; // second radiation constant [nm*K]
             double[] spd = new double[wl.Length];
             for (int i = 0; i < wl.Length; i++)
-                spd[i] = Math.Pow(560.0 / wl[i], 5) * (Math.Exp(c2 / (560.0 * T)) - 1) / (Math.Exp(c2 / (wl[i] * T)) - 1);
+            {
+                double l = wl[i];
+                spd[i] = Math.Pow(560.0 / l, 5) *
+                          (Math.Exp(c2 / (560.0 * temperature)) - 1) /
+                          (Math.Exp(c2 / (l * temperature)) - 1);
+            }
             int idx = Array.IndexOf(wl, 560.0);
             if (idx >= 0)
-                for (int i = 0; i < spd.Length; i++) spd[i] *= 100 / spd[idx];
+            {
+                double scale = 100 / spd[idx];
+                for (int i = 0; i < spd.Length; i++) spd[i] *= scale;
+            }
             return spd;
+        }
+
+        public static double[] LoadStandardBlackbodySPD(double[] wl)
+            => LoadBlackbodySPD(wl, 2856);
+
+        private static double[] LoadF11SPD(double[] wl)
+        {
+            // Approximate relative SPD for CIE F11 fluorescent lamp (TL84)
+            // Normalised at 560 nm to 100. Values at 380-730 nm step 5 nm.
+            double[] table = new double[]
+            {
+                1.3,1.3,1.6,2.0,2.5,4.2,6.2,14.0,22.0,31.0,
+                38.0,39.0,38.0,35.0,30.0,25.0,21.0,20.0,20.0,20.0,
+                21.0,25.0,34.0,44.0,55.0,66.0,72.0,77.0,80.0,81.0,
+                79.0,78.0,78.0,78.0,76.0,80.0,87.0,95.0,100.0,100.0,
+                97.0,95.0,95.0,98.0,98.0,95.0,86.0,74.0,56.0,40.0,
+                26.0,17.0,11.0,9.0,8.0,8.0,7.0,7.0,8.0,9.0,
+                9.0,9.0,8.0,6.0,4.0,3.0,1.8,1.0,0.6,0.3,0.3
+            };
+
+            return Interpolate(
+                Enumerable.Range(0, table.Length).Select(i => 380.0 + i * 5).ToArray(),
+                table, wl);
+        }
+
+        public static double[] LoadStandardSPD(string name, double[] wl)
+        {
+            name = name.ToUpperInvariant();
+            return name switch
+            {
+                "BB" => LoadBlackbodySPD(wl, 2856),
+                "D50" => LoadBlackbodySPD(wl, 5000),
+                "F11" => LoadF11SPD(wl),
+                _ => throw new ArgumentException($"Unknown standard SPD '{name}'"),
+            };
         }
 
         public static (double[] xBar, double[] yBar, double[] zBar) LoadCIE1931Functions(double[] wl)

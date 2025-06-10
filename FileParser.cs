@@ -7,8 +7,16 @@ namespace SpectralAnalysis
 {
     public static class FileParser
     {
-        public static Spectrum ParseSpectrum(string path)
+        /// <summary>
+        /// Parse a text file with spectral data. First line contains the header
+        /// "Reading X Y Z L* a* b λ1 λ2 ... λn" and the second line contains data.
+        /// </summary>
+        /// <param name="path">Path to txt file</param>
+        public static Spectrum ParseTxt(string path)
         {
+            if (!File.Exists(path))
+                throw new FileNotFoundException($"File '{path}' not found.", path);
+
             string[] lines = File.ReadAllLines(path);
             if (lines.Length < 2)
                 throw new InvalidDataException($"File '{path}' must contain at least 2 lines.");
@@ -33,5 +41,9 @@ namespace SpectralAnalysis
 
             return new Spectrum { Wavelengths = wavelengths, Values = values };
         }
+
+        // Legacy method used in early code. Redirects to ParseTxt for backward
+        // compatibility.
+        public static Spectrum ParseSpectrum(string path) => ParseTxt(path);
     }
 }

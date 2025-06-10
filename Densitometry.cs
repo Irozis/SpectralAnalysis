@@ -5,7 +5,7 @@ namespace SpectralAnalysis
 {
     public static class Densitometry
     {
-        public static DensityResult ComputeDensities(double[] wl, double[] R)
+        public static DensityResult ComputeDensity(double[] wl, double[] R)
         {
             double total = R.Sum();
             double D0 = Math.Log10(1.0 / total);
