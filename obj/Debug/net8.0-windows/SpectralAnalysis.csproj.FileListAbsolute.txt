@@ -1,0 +1,14 @@
+c:\Users\fedelesh_dm\Desktop\Own\SpectralAnalysis\bin\Debug\net8.0-windows\SpectralAnalysis.exe
+C:\Users\fedelesh_dm\Desktop\Own\SpectralAnalysis\bin\Debug\net8.0-windows\SpectralAnalysis.deps.json
+C:\Users\fedelesh_dm\Desktop\Own\SpectralAnalysis\bin\Debug\net8.0-windows\SpectralAnalysis.runtimeconfig.json
+c:\Users\fedelesh_dm\Desktop\Own\SpectralAnalysis\bin\Debug\net8.0-windows\SpectralAnalysis.dll
+c:\Users\fedelesh_dm\Desktop\Own\SpectralAnalysis\bin\Debug\net8.0-windows\SpectralAnalysis.pdb
+c:\Users\fedelesh_dm\Desktop\Own\SpectralAnalysis\obj\Debug\net8.0-windows\SpectralAnalysis.GeneratedMSBuildEditorConfig.editorconfig
+c:\Users\fedelesh_dm\Desktop\Own\SpectralAnalysis\obj\Debug\net8.0-windows\SpectralAnalysis.AssemblyInfoInputs.cache
+c:\Users\fedelesh_dm\Desktop\Own\SpectralAnalysis\obj\Debug\net8.0-windows\SpectralAnalysis.AssemblyInfo.cs
+c:\Users\fedelesh_dm\Desktop\Own\SpectralAnalysis\obj\Debug\net8.0-windows\SpectralAnalysis.csproj.CoreCompileInputs.cache
+c:\Users\fedelesh_dm\Desktop\Own\SpectralAnalysis\obj\Debug\net8.0-windows\SpectralAnalysis.dll
+c:\Users\fedelesh_dm\Desktop\Own\SpectralAnalysis\obj\Debug\net8.0-windows\refint\SpectralAnalysis.dll
+c:\Users\fedelesh_dm\Desktop\Own\SpectralAnalysis\obj\Debug\net8.0-windows\SpectralAnalysis.pdb
+C:\Users\fedelesh_dm\Desktop\Own\SpectralAnalysis\obj\Debug\net8.0-windows\SpectralAnalysis.genruntimeconfig.cache
+C:\Users\fedelesh_dm\Desktop\Own\SpectralAnalysis\obj\Debug\net8.0-windows\ref\SpectralAnalysis.dll
