@@ -28,8 +28,29 @@ namespace SpectralAnalysis
                 Console.WriteLine($"Warning: '{path}' header count {headerWl.Length} != data count {dataVal.Length}. Using min length {len}.");
             }
 
-            var wavelengths = headerWl.Take(len).Select(s => double.Parse(s, CultureInfo.InvariantCulture)).ToArray();
-            var values = dataVal.Take(len).Select(s => double.Parse(s, CultureInfo.InvariantCulture)).ToArray();
+            var wavelengths = new double[len];
+            for (int k = 0; k < len; k++)
+            {
+                string s = headerWl[k];
+                if (!double.TryParse(s, System.Globalization.NumberStyles.Any, CultureInfo.InvariantCulture, out double val))
+                    throw new InvalidDataException($"Invalid number format for wavelength at data column {k + 1} (after skipping first 7 metadata columns): '{s}'");
+                if (double.IsNaN(val) || double.IsInfinity(val))
+                    throw new InvalidDataException($"Wavelength at data column {k + 1} (after skipping first 7 metadata columns) is NaN or Infinity: '{s}' (parsed as {val})");
+                wavelengths[k] = val;
+            }
+
+            var values = new double[len];
+            for (int k = 0; k < len; k++)
+            {
+                string s = dataVal[k];
+                // Using wavelengths[k] in the error message assumes wavelengths parsing was successful.
+                // If an error occurs during wavelength parsing, this part won't be reached for that file.
+                if (!double.TryParse(s, System.Globalization.NumberStyles.Any, CultureInfo.InvariantCulture, out double val))
+                    throw new InvalidDataException($"Invalid number format for value at data column {k + 1} (corresponding to wavelength '{wavelengths[k]}'): '{s}'");
+                if (double.IsNaN(val) || double.IsInfinity(val))
+                    throw new InvalidDataException($"Value at data column {k + 1} (corresponding to wavelength '{wavelengths[k]}') is NaN or Infinity: '{s}' (parsed as {val})");
+                values[k] = val;
+            }
 
             if (wavelengths.Length > 0) // Only sort if there's data
             {
